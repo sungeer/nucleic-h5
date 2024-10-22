@@ -29,7 +29,7 @@ headers = {
 @route.post('/chat-id')
 @auth_required
 @validate_request(chat_id_schema)
-async def get_chat_id(request):
+async def get_chat_id(request: Request):
     body = await request.json()
     title = body.get('title')
 
@@ -98,7 +98,7 @@ async def stream_data(conversation_id, chat_id, trace_id, content):
 @route.post('/send-message')
 @auth_required
 @validate_request(send_message_schema)
-async def send_message(request):
+async def send_message(request: Request):
     body = await request.json()
     conversation_id = body.get('conversation_id')
     content = body.get('content')
@@ -116,7 +116,7 @@ async def send_message(request):
 # 所有会话
 @route.post('/chats')
 @auth_required
-async def get_chats(request):
+async def get_chats(request: Request):
     user = request.state.user
     user_id = user.id
     chats = await chat_model.get_chats(user_id)
@@ -127,7 +127,7 @@ async def get_chats(request):
 @route.post('/messages')
 @auth_required
 @validate_request(get_messages_schema)
-async def get_messages(request):
+async def get_messages(request: Request):
     body = await request.json()
     conversation_id = body.get('conversation_id')
 
