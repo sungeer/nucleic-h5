@@ -19,7 +19,7 @@ async def add_message(chat_id, trace_id, sender):
     }
     await db.execute(sql_str, values)
 
-    last_id = await db.fetch_one(last_id_str)
+    last_id = await db.fetch_one(last_id_str)  # None or Record as dict
     lastrowid = last_id[0]
 
     return lastrowid
@@ -48,5 +48,5 @@ async def get_messages(chat_id):
         LIMIT 100;
     '''
     values = {'chat_id': chat_id}
-    chats = await db.fetch_all(sql_str, values)
+    chats = await db.fetch_all(sql_str, values)  # [] or [Record_a, Record_b]
     return chats
