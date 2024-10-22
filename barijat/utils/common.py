@@ -14,7 +14,7 @@ def parse_limit_str(page_info=None):
 def parse_update_str(table, p_key, p_id, update_dict):
     sql_str = f' UPDATE {table} SET '
     temp_str = [f' {key} = :{key} ' for key, _ in update_dict.items()]
-    sql_str += ', '.join(r for r in temp_str) + f' WHERE {p_key} = :{p_key} '
+    sql_str += ', '.join(r for r in temp_str)
     if p_key in update_dict:
         where_value = f'{p_key}_exc'
         sql_str += f' WHERE {p_key} = :{where_value} '
