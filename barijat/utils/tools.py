@@ -5,8 +5,8 @@ from datetime import datetime, date
 from decimal import Decimal
 from http import HTTPStatus
 
-from starlette.responses import JSONResponse
-from starlette.exceptions import HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException
 from databases.interfaces import Record
 
 

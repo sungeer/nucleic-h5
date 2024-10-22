@@ -1,10 +1,18 @@
-from starlette.applications import Starlette
-from starlette.middleware.cors import CORSMiddleware
-from starlette.exceptions import HTTPException
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import HTTPException
+
+from barijat.utils import http_client
+from barijat.utils import redis_util
+from barijat.utils.db_util import db
+from barijat.utils.log_util import logger
+from barijat.utils.tools import jsonify_exc
+from barijat.utils.errors import ValidationError
+from barijat.views import user_view, chat_view
 
 
 def create_app():
-    app = Starlette()
+    app = FastAPI(docs_url=None, redoc_url=None)
 
     register_errors(app)
     register_events(app)
@@ -13,39 +21,7 @@ def create_app():
     return app
 
 
-def register_events(app):
-    from barijat.utils.db_util import db
-
-    @app.on_event('startup')
-    async def startup():
-        await db.connect()
-
-    @app.on_event('shutdown')
-    async def shutdown():
-        await db.disconnect()
-
-        from barijat.utils import http_client
-        await http_client.close_httpx()
-
-        from barijat.utils import redis_util
-        await redis_util.close_redis()
-
-
-def register_middlewares(app):
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=['127.0.0.1'],
-        allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
-    )
-
-
 def register_errors(app):
-    from barijat.utils.log_util import logger
-    from barijat.utils.tools import jsonify_exc
-    from barijat.utils.errors import ValidationError
-
     @app.exception_handler(ValidationError)
     async def validation_exception_handler(request, exc: ValidationError):
         logger.opt(exception=True).warning(exc)
@@ -62,10 +38,31 @@ def register_errors(app):
         return jsonify_exc(500)
 
 
+def register_events(app):
+    @app.on_event('startup')
+    async def startup():
+        await db.connect()
+
+    @app.on_event('shutdown')
+    async def shutdown():
+        await db.disconnect()
+        await http_client.close_httpx()
+        await redis_util.close_redis()
+
+
+def register_middlewares(app):
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=['127.0.0.1'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
+
+
 def register_routers(app):
-    from barijat.urls import chat_url, user_url
-    app.router.mount('/chat', chat_url.chat_url)
-    app.router.mount('/user', user_url.user_url)
+    app.include_router(chat_view.route)
+    app.include_router(user_view.route)
 
 
 app = create_app()

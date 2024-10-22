@@ -1,7 +1,8 @@
 import json
 
 import httpx
-from starlette.responses import StreamingResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import StreamingResponse
 
 from barijat.configs import settings
 from barijat.utils.http_client import httpx_common, httpx_stream
@@ -11,6 +12,8 @@ from barijat.utils.log_util import logger
 from barijat.utils.decorators import auth_required, validate_request
 from barijat.models import chat_model, message_model, content_model
 from barijat.utils.schemas import chat_id_schema, send_message_schema, get_messages_schema
+
+route = APIRouter(prefix='/chat')
 
 api_key = settings.ai_api_key
 workspace_id = settings.ai_workspace_id
@@ -23,6 +26,7 @@ headers = {
 }
 
 
+@route.post('/chat-id')
 @auth_required
 @validate_request(chat_id_schema)
 async def get_chat_id(request):
@@ -91,6 +95,7 @@ async def stream_data(conversation_id, chat_id, trace_id, content):
     await content_model.add_content(message_id, content_str)
 
 
+@route.post('/send-message')
 @auth_required
 @validate_request(send_message_schema)
 async def send_message(request):
@@ -109,6 +114,7 @@ async def send_message(request):
 
 
 # 所有会话
+@route.post('/chats')
 @auth_required
 async def get_chats(request):
     user = request.state.user
@@ -118,6 +124,7 @@ async def get_chats(request):
 
 
 # 所有问答
+@route.post('/messages')
 @auth_required
 @validate_request(get_messages_schema)
 async def get_messages(request):

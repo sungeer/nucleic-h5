@@ -1,12 +1,17 @@
+from fastapi import APIRouter, Request
+
 from barijat.utils.tools import jsonify, abort
 from barijat.utils import jwt_util
 from barijat.utils.schemas import access_token_schema
 from barijat.utils.decorators import validate_request
 from barijat.models import user_model
 
+route = APIRouter(prefix='/user')
 
+
+@route.post('/get-access-token')
 @validate_request(access_token_schema)
-async def get_access_token(request):
+async def get_access_token(request: Request):
     body = await request.json()
     phone_number = body['phone_number']
     password = body['password']
