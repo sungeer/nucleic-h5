@@ -7,56 +7,55 @@ def parse_limit_str(page_info=None):
         page_info = {}
     page = int(page_info.get('page', 1))
     page_size = int(page_info.get('rows', 20))
-    limit_str = ' LIMIT %s, %s ' % ((page - 1) * page_size, page_size)
+    limit_str = f' LIMIT {(page - 1) * page_size}, {page_size} '
     return limit_str
 
 
 def parse_update_str(table, p_key, p_id, update_dict):
-    sql_str = ' UPDATE %s SET ' % (table,)
-    temp_str = []
-    sql_values = []
-    for key, value in update_dict.items():
-        temp_str.append(key + ' = %s ')
-        sql_values.append(value)
-    sql_str += ', '.join(r for r in temp_str) + ' WHERE ' + p_key + ' = %s '
-    sql_values.append(p_id)
+    sql_str = f' UPDATE {table} SET '
+    temp_str = [f' {key} = :{key} ' for key, _ in update_dict.items()]
+    sql_str += ', '.join(r for r in temp_str) + f' WHERE {p_key} = :{p_key} '
+    if p_key in update_dict:
+        where_value = f'{p_key}_exc'
+        sql_str += f' WHERE {p_key} = :{where_value} '
+        sql_values = {where_value: p_id}
+    else:
+        sql_str += f' WHERE {p_key} = :{p_key} '
+        sql_values = {p_key: p_id}
+    sql_values.update(update_dict)
     return sql_str, sql_values
 
 
 def parse_where_str(filter_fields, request_data):
     if not isinstance(filter_fields, tuple) and not isinstance(filter_fields, list):
         filter_fields = (filter_fields,)
-    where_str = ' WHERE 1 = %s '
-    where_values = [1]
+    where_str = ' WHERE 1 = :condition_value '
+    where_values = {'condition_value': 1}
     for key in filter_fields:
         value = request_data.get(key)
         if value:
-            where_str += ' AND ' + key + ' = %s '
-            where_values.append(value)
-    if not where_values:
-        where_values = None
+            where_str += f' AND {key} = :{key} '
+            where_values.update({key: value})
     return where_str, where_values
 
 
 def parse_where_like_str(filter_fields, request_data):
     if not isinstance(filter_fields, tuple) and not isinstance(filter_fields, list):
         filter_fields = (filter_fields,)
-    where_str = ' WHERE 1 = %s '
-    where_values = [1]
+    where_str = ' WHERE 1 = :condition_value '
+    where_values = {'condition_value': 1}
     for key in filter_fields:
         value = request_data.get(key)
         if value:
-            where_str += ' AND ' + key + ' LIKE %s '
-            where_values.append('%%%%%s%%%%' % value)
-    if not where_values:
-        where_values = None
+            where_str += f' AND {key} LIKE :{key} '
+            where_values.update({key: f'%{value}%'})
     return where_str, where_values
 
 
 def parse_count_str(sql_str, truncate=False):
     if truncate:
         if 'GROUP BY' in sql_str:
-            sql_str = 'SELECT COUNT(*) total FROM (%s) AS TEMP' % sql_str
+            sql_str = f'SELECT COUNT(*) total FROM ({sql_str}) AS TEMP'
         else:
             sql_str = re.sub(r'SELECT[\s\S]*?FROM', 'SELECT COUNT(*) total FROM', sql_str, count=1)
     if 'ORDER BY' in sql_str:
