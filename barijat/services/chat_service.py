@@ -8,21 +8,16 @@ from barijat.utils.http_client import httpx_stream
 from barijat.utils.log_util import logger
 from barijat.models import message_model, content_model
 
-api_key = settings.ai_api_key
-workspace_id = settings.ai_workspace_id
-robot_id = settings.ai_robot_id
-
-headers = {
-    'Content-Type': 'application/json',
-    'Access-key': api_key,
-    'Workspace-Id': workspace_id
-}
-
 
 async def get_response(conversation_id, content):
     url = f'{settings.ai_url}/v1/oapi/agent/chat'
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-key': settings.ai_api_key,
+        'Workspace-Id': settings.ai_workspace_id
+    }
     data = {
-        'robot_id': robot_id,
+        'robot_id': settings.ai_robot_id,
         'conversation_id': conversation_id,
         'content': content,
         'response_mode': 'streaming'

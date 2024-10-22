@@ -12,16 +12,6 @@ from barijat.services import chat_service
 
 route = APIRouter(prefix='/chat')
 
-api_key = settings.ai_api_key
-workspace_id = settings.ai_workspace_id
-robot_id = settings.ai_robot_id
-
-headers = {
-    'Content-Type': 'application/json',
-    'Access-key': api_key,
-    'Workspace-Id': workspace_id
-}
-
 
 @route.post('/chat-id')
 @auth_required
@@ -31,8 +21,13 @@ async def get_chat_id(request: Request):
     title = body.get('title')
 
     url = f'{settings.ai_url}/v1/oapi/agent/chat/conversation/create'
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-key': settings.ai_api_key,
+        'Workspace-Id': settings.ai_workspace_id
+    }
     data = {
-        'robot_id': robot_id,
+        'robot_id': settings.ai_robot_id,
         'user': 'wangxun',
         'title': title
     }
