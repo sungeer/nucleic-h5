@@ -1,4 +1,4 @@
-from barijat.utils.db_util import db
+from barijat.utils.db_util import db  # db_pool
 
 
 async def get_user_by_phone(phone_number):
@@ -11,7 +11,7 @@ async def get_user_by_phone(phone_number):
             phone = :phone_number
     '''
     values = {'phone_number': phone_number}
-    user_info = await db.fetch_one(sql_str, values)
+    user_info = await db.fetch_one(sql_str, values)  # None or Record as dict
     return user_info
 
 async def get_user_by_id(user_id):

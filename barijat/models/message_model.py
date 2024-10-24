@@ -1,3 +1,4 @@
+from barijat.utils import common
 from barijat.utils.db_util import db
 
 
@@ -9,19 +10,14 @@ async def add_message(chat_id, trace_id, sender):
         VALUES 
             (:chat_id, :trace_id, :sender)
     '''
-
-    last_id_str = 'SELECT LAST_INSERT_ID()'
-
     values = {
         'chat_id': chat_id,
         'trace_id': trace_id,
         'sender': sender
     }
-    await db.execute(sql_str, values)
-
-    last_id = await db.fetch_one(last_id_str)  # None or Record as dict
-    lastrowid = last_id[0]
-
+    async with db.transaction():
+        await db.execute(sql_str, values)
+        lastrowid = await common.get_lastrowid(db)
     return lastrowid
 
 async def get_messages(chat_id):

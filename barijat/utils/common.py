@@ -2,6 +2,12 @@ import math
 import re
 
 
+async def get_lastrowid(db):
+    sql_str = 'SELECT LAST_INSERT_ID()'
+    lastrowid = await db.fetch_val(sql_str)
+    return lastrowid
+
+
 def parse_limit_str(page_info=None):
     if page_info is None:
         page_info = {}

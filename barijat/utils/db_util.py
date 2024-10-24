@@ -10,6 +10,7 @@ db_name = settings.db_name
 
 DATABASE_URL = f'mysql+aiomysql://{db_user}:{db_passwd}@{db_host}:{db_port}/{db_name}'
 
+# db is db_pool
 db = Database(
     DATABASE_URL,
     min_size=5,  # 连接池的最小连接数

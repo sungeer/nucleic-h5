@@ -1,3 +1,4 @@
+from barijat.utils import common
 from barijat.utils.db_util import db
 
 
@@ -9,19 +10,14 @@ async def add_chat(conversation_id, title, user_id):
         VALUES 
             (:conversation_id, :title, :user_id)
     '''
-
-    last_id_str = 'SELECT LAST_INSERT_ID()'
-
     values = {
         'conversation_id': conversation_id,
         'title': title,
         'user_id': user_id
     }
-    await db.execute(sql_str, values)
-
-    last_id = await db.fetch_one(last_id_str)
-    lastrowid = last_id[0]
-
+    async with db.transaction():
+        await db.execute(sql_str, values)
+        lastrowid = await common.get_lastrowid(db)
     return lastrowid
 
 async def get_chats(user_id):
@@ -48,5 +44,5 @@ async def get_chat_by_conversation(conversation_id):
             conversation_id = :conversation_id
     '''
     values = {'conversation_id': conversation_id}
-    chat_info = await db.fetch_one(sql_str, values)
+    chat_info = await db.fetch_one(sql_str, values)  # None or Record as dict
     return chat_info
