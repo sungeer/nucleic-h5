@@ -1,4 +1,3 @@
-from barijat.utils import common
 from barijat.utils.db_util import db
 
 
@@ -17,7 +16,7 @@ async def add_message(chat_id, trace_id, sender):
     }
     async with db.transaction():
         await db.execute(sql_str, values)
-        lastrowid = await common.get_lastrowid(db)
+        lastrowid = await db.fetch_val('SELECT LAST_INSERT_ID()')
     return lastrowid
 
 async def get_messages(chat_id):
