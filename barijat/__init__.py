@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from barijat.utils import http_client
 from barijat.utils import redis_util
@@ -23,17 +24,22 @@ def create_app():
 
 def register_errors(app):
     @app.exception_handler(ValidationError)
-    async def validation_exception_handler(request, exc: ValidationError):
+    async def validation_exception_handler(request: Request, exc: ValidationError):
         logger.opt(exception=True).warning(exc)
         return jsonify_exc(422, exc.detail)
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(request, exc):
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        logger.opt(exception=True).warning(exc)
+        return jsonify_exc(exc.status_code, exc.detail)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def starlette_exception_handler(request: Request, exc: StarletteHTTPException):
         logger.opt(exception=True).warning(exc)
         return jsonify_exc(exc.status_code, exc.detail)
 
     @app.exception_handler(Exception)
-    async def global_exception_handler(request, exc):
+    async def global_exception_handler(request: Request, exc: Exception):
         logger.exception(exc)
         return jsonify_exc(500)
 
