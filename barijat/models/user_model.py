@@ -14,6 +14,7 @@ async def get_user_by_phone(phone_number):
     user_info = await db.fetch_one(sql_str, values)  # None or Record as dict
     return user_info
 
+
 async def get_user_by_id(user_id):
     sql_str = '''
         SELECT

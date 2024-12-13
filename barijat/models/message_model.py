@@ -19,6 +19,7 @@ async def add_message(chat_id, trace_id, sender):
         lastrowid = await db.fetch_val('SELECT LAST_INSERT_ID()')
     return lastrowid
 
+
 async def get_messages(chat_id):
     sql_str = '''
         SELECT

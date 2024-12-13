@@ -19,6 +19,7 @@ async def add_chat(conversation_id, title, user_id):
         lastrowid = await db.fetch_val('SELECT LAST_INSERT_ID()')
     return lastrowid
 
+
 async def get_chats(user_id):
     sql_str = '''
         SELECT
@@ -32,6 +33,7 @@ async def get_chats(user_id):
     values = {'user_id': user_id}
     chats = await db.fetch_all(sql_str, values)
     return chats
+
 
 async def get_chat_by_conversation(conversation_id):
     sql_str = '''
